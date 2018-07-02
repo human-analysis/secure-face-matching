@@ -14,6 +14,7 @@ The face feature vectors are assumed be normalized to unit-norm both during enro
 
 Installation involves compiling the SEAL library, the enrollment and authentication scripts. We have included a python script "data/gendata.py" that can generate fake data (512-dimensional vector) for the gallery and probe. The code has been tested for matching 1 probe to 1 gallery.
 
+~~~~
 $ cd "this directory"
 $ cd 3rdparty/SEAL-2.3/SEAL
 $ make clean; make
@@ -27,3 +28,4 @@ $ python gendata.py
 $ cd ../bin
 $ ./enrollment
 $ ./authenticate
+~~~~
