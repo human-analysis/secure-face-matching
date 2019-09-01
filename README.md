@@ -1,3 +1,7 @@
+# [Secure Face Matching Using Fully Homomorphic Encryption](https://arxiv.org/abs/1805.00577)
+
+By Vishnu Naresh Boddeti
+
 # Introduction
 Face Matching over encrypted feature vectors. The library contains three main parts, the SEAL library, the enrollment script and the authentication script.
 
@@ -9,6 +13,17 @@ The "face-matching/authentication/authentication.cpp" script implements the matc
 
 # Assumptions
 The face feature vectors are assumed be normalized to unit-norm both during enrollment as well as during the authentication stage. We then compute the inner product between the normalized features. This is equivalent to computing the cosing similarity between the un-normalized feature vectors.
+
+# Citation
+
+If you think this library is useful to your research, please cite:
+
+    @article{boddeti2018secure,
+        title={Secure Face Matching Using Fully Homomorphic Encryption},
+        author={Boddeti, Vishnu Naresh},
+        booktitle={IEEE International Conference on Biometrics: Theory, Applications, and Systems (BTAS)},
+        year={2018}
+	}
 
 # Installation and Usage
 
@@ -23,7 +38,7 @@ $ cd enrollment
 $ make clean; make
 $ cd ../authentication
 $ make clean; make
-$ cd ../data
+$ cd ../../data
 $ python gendata.py
 $ cd ../bin
 $ ./enrollment

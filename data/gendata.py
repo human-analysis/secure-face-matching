@@ -13,7 +13,7 @@
 import struct
 import numpy as np
 
-dim = 8
+dim = 64
 num1 = 5
 num2 = 5
 

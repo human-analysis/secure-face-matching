@@ -52,8 +52,8 @@ int main()
     EncryptionParameters parms;
     
     float precision = 125; // precision of 1/125 = 0.004
-    parms.set_poly_modulus("1x^4096 + 1"); // 4096/2 is maximum feature vector size
-    parms.set_coeff_modulus(coeff_modulus_128(4096)); // change to coeff_modulus_192 for 192 bits of security
+    parms.set_poly_modulus("1x^128 + 1"); // 4096/2 is maximum feature vector size
+    parms.set_coeff_modulus(coeff_modulus_192(4096)); // change to coeff_modulus_192 for 192 bits of security
     parms.set_plain_modulus(40961);
 
     cout << "\nTotal memory allocated by global memory pool: "
