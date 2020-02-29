@@ -54,23 +54,23 @@ $ cd ../bin
 ## 1:1 Matching with BFV scheme
 ~~~~
 $ ./enrollment-bfv-1-to-1
-$ ./authenticate-bfv-1-to-1
+$ ./authentication-bfv-1-to-1
 ~~~~
 
 ## 1:N Matching with BFV scheme
 ~~~~
 $ ./enrollment-bfv-1-to-n
-$ ./authenticate-bfv-1-to-n
+$ ./authentication-bfv-1-to-n
 ~~~~
 
 ## 1:1 Matching with CKKS scheme
 ~~~~
 $ ./enrollment-ckks-1-to-1
-$ ./authenticate-ckks-1-to-1
+$ ./authentication-ckks-1-to-1
 ~~~~
 
 ## 1:N Matching with CKKS scheme
 ~~~~
 $ ./enrollment-ckks-1-to-n
-$ ./authenticate-ckks-1-to-n
+$ ./authentication-ckks-1-to-n
 ~~~~
