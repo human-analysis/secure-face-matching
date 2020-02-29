@@ -7,12 +7,14 @@ Face Matching over encrypted feature vectors. The library contains three main pa
 
 The SEAL library is the cryptographic library from Microsoft Research, supporting the underlying fully homomorphic encryption functionality.
 
-The "face-matching/enrollment/enrollment.cpp" script implements the enrollment stage where keys are generated, feature vector is obtained, feature vector is encrypted using the public key and encrypted feature vector is stored in database along with the public, evaluation and Galois keys (typically on the remote server). Note that the keys only need to be generated once per user.
+The library supports both 1:1 matching and 1:N matching. It also supports both the BFV (with integer quantization) scheme as well as the CKKS (real values) scheme.
 
-The "face-matching/authentication/authentication.cpp" script implements the matching stage,  a probe feature vector is obtained, probe is encrypted using the public key, encrypted feature vector is matched against encrypted gallery vector using the evaluation keys and Galois keys, the encrypted score is then decrypted using the private key (typically on the client).
+The "face-matching/enrollment/enrollment-bfv-1-to-1.cpp" script implements the enrollment stage, for 1:1 matching using BFV scheme, where keys are generated, feature vector is obtained, feature vector is encrypted using the public key and encrypted feature vector is stored in database along with the public, relinearization and Galois keys (typically on the remote server). Note that the keys only need to be generated once per user.
+
+The "face-matching/authentication/authentication-bfv-1-to-1.cpp" script implements the matching stage, for 1:1 matching using BFV scheme, a probe feature vector is obtained, probe is encrypted using the public key, encrypted feature vector is matched against encrypted gallery vector using the relinearization keys and Galois keys, the encrypted score is then decrypted using the private key (typically on the client).
 
 # Assumptions
-The face feature vectors are assumed be normalized to unit-norm both during enrollment as well as during the authentication stage. We then compute the inner product between the normalized features. This is equivalent to computing the cosing similarity between the un-normalized feature vectors.
+The face feature vectors are assumed be normalized to unit-norm both during enrollment as well as during the authentication stage. We then compute the inner product between the normalized features. This is equivalent to computing the cosine similarity between the un-normalized feature vectors.
 
 # Citation
 
@@ -25,22 +27,50 @@ If you think this library is useful to your research, please cite:
         year={2018}
 	}
 
-# Installation and Usage
+# Installation
 
-Installation involves compiling the SEAL library, the enrollment and authentication scripts. We have included a python script "data/gendata.py" that can generate fake data (512-dimensional vector) for the gallery and probe. The code has been tested for matching 1 probe to 1 gallery.
+Installation involves compiling the SEAL library, the enrollment and authentication scripts. We have included a python script "data/gendata.py" that can generate fake data (64-dimensional vector) for the gallery and probe.
 
 ~~~~
-$ cd "this directory"
-$ cd 3rdparty/SEAL-2.3/SEAL
+$ git clone --recursive https://github.com/human-analysis/secure-face-matching.git
+$ cd secure-face-matching
+$ cd 3rdparty/SEAL/native/src/
+$ cmake .
+$ make clean; make; make install
+$ cd ../../../../face-matching/
+$ cd enrollment/build
+$ cmake ../
 $ make clean; make
-$ cd ../../../face-matching/
-$ cd enrollment
+$ cd ../../authentication/build
+$ cmake ../
 $ make clean; make
-$ cd ../authentication
-$ make clean; make
-$ cd ../../data
+$ cd ../../../data
 $ python gendata.py
 $ cd ../bin
-$ ./enrollment
-$ ./authenticate
+~~~~
+
+# Usage
+
+## 1:1 Matching with BFV scheme
+~~~~
+$ ./enrollment-bfv-1-to-1
+$ ./authenticate-bfv-1-to-1
+~~~~
+
+## 1:N Matching with BFV scheme
+~~~~
+$ ./enrollment-bfv-1-to-n
+$ ./authenticate-bfv-1-to-n
+~~~~
+
+## 1:1 Matching with CKKS scheme
+~~~~
+$ ./enrollment-ckks-1-to-1
+$ ./authenticate-ckks-1-to-1
+~~~~
+
+## 1:N Matching with CKKS scheme
+~~~~
+$ ./enrollment-ckks-1-to-n
+$ ./authenticate-ckks-1-to-n
 ~~~~

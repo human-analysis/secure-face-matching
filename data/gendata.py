@@ -8,18 +8,29 @@
 # //
 # //   Created On: 05/01/2018
 # //   Created By: Vishnu Boddeti <mailto:vishnu@msu.edu>
+# //   Modified On: 03/01/2020
 # ////////////////////////////////////////////////////////////////////////////
 
 import struct
 import numpy as np
 
+
+def write_to_file(name, data, siz):
+    f = open(name, 'wb')
+    s = struct.pack('i' * len(siz), *siz)
+    f.write(s)
+    s = struct.pack('f' * len(data), *data)
+    f.write(s)
+    f.close()
+
+
 dim = 64
-num1 = 5
-num2 = 5
+num1 = 4096
+num2 = 16
 
 data1 = np.float32(np.random.randn(num1, dim))
 data2 = np.float32(np.random.randn(num2, dim))
-data2 = data1.copy()
+# data2 = data1.copy()
 
 data1 = data1 / np.linalg.norm(data1, ord=2, axis=1, keepdims=True)
 data2 = data2 / np.linalg.norm(data2, ord=2, axis=1, keepdims=True)
@@ -30,25 +41,30 @@ d2 = np.round(data2 * precision)
 score = np.dot(d1, d2.transpose()) / (precision * precision)
 print(score)
 
-data1 = data1.flatten()
-data2 = data2.flatten()
+# save in 1-to-1 format
+d1 = data1.flatten()
+d2 = data2.flatten()
 
-data1 = np.ndarray.tolist(data1)
-data2 = np.ndarray.tolist(data2)
+d1 = np.ndarray.tolist(d1)
+d2 = np.ndarray.tolist(d2)
 
 size1 = [num1, dim]
 size2 = [num2, dim]
 
-f = open('gallery.bin', 'wb')
-s = struct.pack('i' * len(size1), *size1)
-f.write(s)
-s = struct.pack('f' * len(data1), *data1)
-f.write(s)
-f.close()
+write_to_file('probe-1-to-1.bin', d2, size2)
+write_to_file('gallery-1-to-1.bin', d1, size1)
 
-f = open('probe.bin', 'wb')
-s = struct.pack('i' * len(size2), *size2)
-f.write(s)
-s = struct.pack('f' * len(data2), *data2)
-f.write(s)
-f.close()
+# save in 1-to-n format
+data1 = data1.transpose()
+data2 = data2.transpose()
+d1 = data1.flatten()
+d2 = data2.flatten()
+
+d1 = np.ndarray.tolist(d1)
+d2 = np.ndarray.tolist(d2)
+
+size1 = [dim, num1]
+size2 = [dim, num2]
+
+write_to_file('probe-1-to-n.bin', d2, size2)
+write_to_file('gallery-1-to-n.bin', d1, size1)
