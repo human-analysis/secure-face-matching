@@ -36,12 +36,14 @@ $ git clone --recursive https://github.com/human-analysis/secure-face-matching.g
 $ cd secure-face-matching
 $ cd 3rdparty/SEAL/native/src/
 $ cmake .
-$ make clean; make; make install
+$ make clean; make; sudo make install
 $ cd ../../../../face-matching/
-$ cd enrollment/build
+$ cd enrollment
+$ mkdir build; cd build
 $ cmake ../
 $ make clean; make
-$ cd ../../authentication/build
+$ cd ../../authentication
+$ mkdir build; cd build
 $ cmake ../
 $ make clean; make
 $ cd ../../../data
@@ -51,26 +53,28 @@ $ cd ../bin
 
 # Usage
 
+Authentication takes an additional parameter, the number of gallery samples to match with. This should match the number of gallery samples enrolled.
+
 ## 1:1 Matching with BFV scheme
 ~~~~
 $ ./enrollment-bfv-1-to-1
-$ ./authentication-bfv-1-to-1
+$ ./authentication-bfv-1-to-1 16
 ~~~~
 
 ## 1:N Matching with BFV scheme
 ~~~~
 $ ./enrollment-bfv-1-to-n
-$ ./authentication-bfv-1-to-n
+$ ./authentication-bfv-1-to-n 16
 ~~~~
 
 ## 1:1 Matching with CKKS scheme
 ~~~~
 $ ./enrollment-ckks-1-to-1
-$ ./authentication-ckks-1-to-1
+$ ./authentication-ckks-1-to-1 16
 ~~~~
 
 ## 1:N Matching with CKKS scheme
 ~~~~
 $ ./enrollment-ckks-1-to-n
-$ ./authentication-ckks-1-to-n
+$ ./authentication-ckks-1-to-n 16
 ~~~~

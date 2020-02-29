@@ -25,7 +25,7 @@ def write_to_file(name, data, siz):
 
 
 dim = 64
-num1 = 4096
+num1 = 16
 num2 = 16
 
 data1 = np.float32(np.random.randn(num1, dim))
