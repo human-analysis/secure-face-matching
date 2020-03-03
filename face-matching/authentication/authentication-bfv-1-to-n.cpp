@@ -39,13 +39,13 @@ int main(int argc, char **argv)
     vector<int64_t> pod_result;
     int num_gallery = atoi(argv[1]);
 
-    GaloisKeys gal_key;
+    // GaloisKeys gal_key;
     RelinKeys relin_key;
     PublicKey public_key;
     SecretKey secret_key;
 
     precision = 125; // precision of 1/125 = 0.004
-    size_t poly_modulus_degree = 4096;
+    size_t poly_modulus_degree = 32768;
 
     EncryptionParameters parms(scheme_type::BFV);
     parms.set_poly_modulus_degree(poly_modulus_degree);
@@ -91,18 +91,18 @@ int main(int argc, char **argv)
     ifile.close();
     stream.str(std::string());
 
-    name = "../data/keys/galios_key_bfv_1_to_n.bin";
-    cout << "Loading Galios Keys: " << name << endl;
-    ifile.open(name.c_str(), ios::out|ios::binary);
-    if (ifile.fail()) {
-        cout << name + " does not exist" << endl;
-    }
-    else{
-        stream << ifile.rdbuf();
-        gal_key.unsafe_load(context, stream);
-    }
-    ifile.close();
-    stream.str(std::string());
+    // name = "../data/keys/galios_key_bfv_1_to_n.bin";
+    // cout << "Loading Galios Keys: " << name << endl;
+    // ifile.open(name.c_str(), ios::out|ios::binary);
+    // if (ifile.fail()) {
+    //     cout << name + " does not exist" << endl;
+    // }
+    // else{
+    //     stream << ifile.rdbuf();
+    //     gal_key.unsafe_load(context, stream);
+    // }
+    // ifile.close();
+    // stream.str(std::string());
 
     name = "../data/keys/relin_key_bfv_1_to_n.bin";
     cout << "Loading Relin Keys: " << name << endl;

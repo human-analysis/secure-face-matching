@@ -41,7 +41,7 @@ int main()
     size_t poly_modulus_degree;
 
     precision = 125; // precision of 1/125 = 0.004
-    poly_modulus_degree = 4096;
+    poly_modulus_degree = 32768;
 
     EncryptionParameters parms(scheme_type::BFV);
     parms.set_poly_modulus_degree(poly_modulus_degree);
@@ -67,6 +67,9 @@ int main()
     Encryptor encryptor(context, public_key);
     Decryptor decryptor(context, secret_key);
 
+    int slot_count = batch_encoder.slot_count();
+    cout << "Plaintext matrix slot count: " << slot_count << endl;
+
     string name;
     ofstream ofile;
 
@@ -78,6 +81,7 @@ int main()
     ofile << stream.str();
     ofile.close();
     stream.str(std::string());
+    cout << "Done saving public keys" << endl;
 
     name = "../data/keys/secret_key_bfv_1_to_n.bin";
     cout << "Saving Secret Key: " << name << endl;
@@ -86,6 +90,7 @@ int main()
     ofile << stream.str();
     ofile.close();
     stream.str(std::string());
+    cout << "Done saving private keys" << endl;
 
     name = "../data/keys/relin_key_bfv_1_to_n.bin";
     cout << "Saving Relin Keys: " <<  name << endl;
@@ -94,23 +99,24 @@ int main()
     ofile << stream.str();
     ofile.close();
     stream.str(std::string());
-
-    name = "../data/keys/galios_key_bfv_1_to_n.bin";
-    cout << "Saving Galios Keys: " <<  name << endl;
-    ofile.open(name.c_str(), ios::out|ios::binary);
-    gal_key.save(stream);
-    ofile << stream.str();
-    ofile.close();
-    stream.str(std::string());
-    int slot_count = batch_encoder.slot_count();
-    cout << "Plaintext matrix slot count: " << slot_count << endl;
+    cout << "Done saving relinearization keys" << endl;
 
 	ifstream ifile;
     int num_gallery, dim_gallery;
     ifile.open ("../data/gallery-1-to-n.bin", ios::in|ios::binary);
 
-    ifile.read((char *)&dim_gallery, sizeof(int));
-    ifile.read((char *)&num_gallery, sizeof(int));
+    if (ifile.fail())
+    {
+      cout << name + " does not exist" << endl;
+    }
+    else
+    {
+      ifile.read((char *)&dim_gallery, sizeof(int));
+      ifile.read((char *)&num_gallery, sizeof(int));
+    }
+
+    cout << num_gallery << endl;
+    cout << dim_gallery << endl;
 
     Plaintext plain_matrix;
     float gallery[num_gallery];
