@@ -26,6 +26,13 @@ If you think this library is useful to your research, please cite:
         booktitle={IEEE International Conference on Biometrics: Theory, Applications, and Systems (BTAS)},
         year={2018}
 	}
+	
+    @article{engelsma2020hers,
+        title={HERS: Homomorphically Encrypted Representation Search},
+        author={Joshua Engelsma, Anil Jain and Vishnu Boddeti},
+        journal={arXiv:2003.12197},
+        year={2020}
+	}
 
 # Installation
 
