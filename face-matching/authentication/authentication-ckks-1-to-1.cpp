@@ -1,7 +1,7 @@
 ///////////// Copyright 2018 Vishnu Boddeti. All rights reserved. /////////////
 //
 //   Project     : Secure Face Matching
-//   File        : authentication.cpp
+//   File        : authentication-ckks-1-to-1.cpp
 //   Description : user face authentication, probe feature encryption,
 //                 probe feature matching with encrypted database, decrypt matching score
 //                 uses CKKS scheme for 1:1 matching
@@ -9,7 +9,7 @@
 //
 //   Created On: 05/01/2018
 //   Created By: Vishnu Boddeti <mailto:vishnu@msu.edu>
-//   Modified On: 02/26/2020
+//   Modified On: 07/06/2022
 ////////////////////////////////////////////////////////////////////////////
 
 #include <fstream>
@@ -23,8 +23,6 @@
 #include <mutex>
 #include <random>
 #include <limits>
-
-#include <time.h>
 #include <cmath>
 
 #include "seal/seal.h"
@@ -37,6 +35,7 @@ int main(int argc, char **argv)
 {
     cout << argv[1] << endl;
     int num_gallery = atoi(argv[1]);
+    int security_level = atoi(argv[2]);
 
     float precision;
     vector<double> pod_result;
@@ -47,11 +46,29 @@ int main(int argc, char **argv)
     SecretKey secret_key;
 
     auto scale = pow(2.0, 20);
-    size_t poly_modulus_degree = 4096;
-
+    
+    size_t poly_modulus_degree;
     EncryptionParameters parms(scheme_type::CKKS);
-    parms.set_poly_modulus_degree(poly_modulus_degree);
-    parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 30, 20, 20, 30 }));
+
+    // these parameters have not been optimized for speed
+    if (security_level == 128)
+    {
+        poly_modulus_degree = 4096;
+        parms.set_poly_modulus_degree(poly_modulus_degree);
+        parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 40, 40, 60 }));
+    }
+    else if (security_level == 192)
+    {
+        poly_modulus_degree = 8192;
+        parms.set_poly_modulus_degree(poly_modulus_degree);
+        parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 40, 40, 60 }));
+    }
+    else if (security_level == 256)
+    {
+        poly_modulus_degree = 8192;
+        parms.set_poly_modulus_degree(poly_modulus_degree);
+        parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 40, 40, 60 }));
+    }
 
     cout << "\nTotal memory allocated by global memory pool: "
         << (MemoryPoolHandle::Global().alloc_byte_count() >> 20) << " MB" << endl;
@@ -146,10 +163,16 @@ int main(int argc, char **argv)
     Plaintext plain_probe;
     vector<double> pod_vector;
 
+    double time_total;
+    std::chrono::steady_clock::time_point time_start, time_end;
+
     for (int i=0; i < num_probe; i++)
     {
         // Load vector of probe from file
         ifile.read((char *)&probe, dim_probe * sizeof(float));
+
+        // we do not want to measure time for loading from disk.
+        time_start = std::chrono::steady_clock::now();
 
         // push probe into a vector of size poly_modulus_degree
         for (int j=0; j<slot_count; j++)
@@ -165,7 +188,13 @@ int main(int argc, char **argv)
 
         // Encrypt entire vector of probe
         ckks_encoder.encode(pod_vector, scale, plain_probe);
-        cout << "Encrypting Probe: " << i << endl;
+        
+        // we do not want to measure time for printing
+        time_end = std::chrono::steady_clock::now();
+        time_total += std::chrono::duration_cast<std::chrono::milliseconds>(time_end - time_start).count();
+        cout << "Encrypting and Matching Probe: " << i << endl;
+        time_start = std::chrono::steady_clock::now();
+
         Ciphertext encrypted_probe;
         encryptor.encrypt(plain_probe, encrypted_probe);
 
@@ -189,11 +218,19 @@ int main(int argc, char **argv)
             ckks_encoder.decode(plain_result, pod_result);
 
             float score = double(pod_result[0]);
+            
+            time_end = std::chrono::steady_clock::now();
+            time_total += std::chrono::duration_cast<std::chrono::milliseconds>(time_end - time_start).count();
             cout << "Matching Score (probe " << i << ", and gallery " << j << "): " << score << endl;
+            time_start = std::chrono::steady_clock::now();
+
             pod_vector.clear();
         }
+        time_end = std::chrono::steady_clock::now();
+        time_total += std::chrono::duration_cast<std::chrono::milliseconds>(time_end - time_start).count();
         cout << " " << endl;
     }
+    cout << "Avg time:" <<  time_total / (num_gallery * num_probe) << endl;
     cout << "Done" << endl;
     ifile.close();
     return 0;

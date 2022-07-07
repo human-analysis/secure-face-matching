@@ -24,7 +24,7 @@ def write_to_file(name, data, siz):
     f.close()
 
 
-dim = 64
+dim = 512
 num1 = 16
 num2 = 16
 

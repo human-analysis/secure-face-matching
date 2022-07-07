@@ -8,7 +8,7 @@
 //
 //   Created On: 05/01/2018
 //   Created By: Vishnu Boddeti <mailto:vishnu@msu.edu>
-//   Modified On: 03/01/2020
+//   Modified On: 07/06/2022
 ////////////////////////////////////////////////////////////////////////////
 
 #include <fstream>
@@ -23,8 +23,7 @@
 #include <mutex>
 #include <random>
 #include <limits>
-
-#include <time.h>
+#include <filesystem>
 #include <cmath>
 
 #include "seal/seal.h"
@@ -33,16 +32,38 @@
 using namespace std;
 using namespace seal;
 
-int main()
+int main(int argc, char **argv)
 {
+
+    cout << argv[1] << endl;
+    int security_level = atoi(argv[1]);
 
     float precision;
     stringstream stream;
 
     auto scale = pow(2.0, 32);
-    size_t poly_modulus_degree = 8192;
-
+    size_t poly_modulus_degree;
     EncryptionParameters parms(scheme_type::CKKS);
+
+    if (security_level == 128)
+    {
+        poly_modulus_degree = 8192;
+        parms.set_poly_modulus_degree(poly_modulus_degree);
+        parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 30, 20, 20, 30 }));
+    }
+    else if (security_level == 192)
+    {
+        poly_modulus_degree = 8192;
+        parms.set_poly_modulus_degree(poly_modulus_degree);
+        parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 30, 20, 20, 30 }));
+    }
+    else if (security_level == 256)
+    {
+        poly_modulus_degree = 8192;
+        parms.set_poly_modulus_degree(poly_modulus_degree);
+        parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 30, 20, 20, 30 }));
+    }
+
     parms.set_poly_modulus_degree(poly_modulus_degree);
     parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 40, 40, 60 }));
 
@@ -67,6 +88,13 @@ int main()
 
     string name;
     ofstream ofile;
+
+    // create directory to save keys
+    auto created_new_directory
+      = std::filesystem::create_directory("../data/keys/");
+    if (not created_new_directory) {
+        // Either creation failed or the directory was already present.
+    }
 
     // save the keys (public, secret, relin and galios)
     name = "../data/keys/public_key_ckks_1_to_n.bin";
@@ -131,6 +159,13 @@ int main()
             else{
                 pod_vector.push_back((double) 0.0);
             }
+        }
+
+        // create directory to save encrypted gallery
+        auto created_new_directory = std::filesystem::create_directory("../data/gallery/");
+        if (not created_new_directory)
+        {
+            // Either creation failed or the directory was already present.
         }
 
         // Encrypt entire dim of gallery

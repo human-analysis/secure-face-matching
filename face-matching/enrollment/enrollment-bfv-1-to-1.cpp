@@ -8,7 +8,7 @@
 //
 //   Created On: 05/01/2018
 //   Created By: Vishnu Boddeti <mailto:vishnu@msu.edu>
-//   Modified On: 03/01/2020
+//   Modified On: 07/06/2022
 ////////////////////////////////////////////////////////////////////////////
 
 #include <fstream>
@@ -23,6 +23,7 @@
 #include <mutex>
 #include <random>
 #include <limits>
+#include <filesystem>
 
 #include <time.h>
 #include <cmath>
@@ -33,19 +34,38 @@
 using namespace std;
 using namespace seal;
 
-int main()
+int main(int argc, char **argv)
 {
+
+    cout << argv[1] << endl;
+    int security_level = atoi(argv[1]);
 
     float precision;
     stringstream stream;
     size_t poly_modulus_degree;
 
     precision = 125; // precision of 1/125 = 0.004
-    poly_modulus_degree = 4096;
-
     EncryptionParameters parms(scheme_type::BFV);
-    parms.set_poly_modulus_degree(poly_modulus_degree);
-    parms.set_coeff_modulus(CoeffModulus::BFVDefault(poly_modulus_degree));
+
+    if (security_level == 128)
+    {
+        poly_modulus_degree = 4096;
+        parms.set_poly_modulus_degree(poly_modulus_degree);
+        parms.set_coeff_modulus(CoeffModulus::BFVDefault(poly_modulus_degree, sec_level_type::tc128));
+    }
+    else if (security_level == 192)
+    {
+        poly_modulus_degree = 8192;
+        parms.set_poly_modulus_degree(poly_modulus_degree);
+        parms.set_coeff_modulus(CoeffModulus::BFVDefault(poly_modulus_degree, sec_level_type::tc192));
+    }
+    else if (security_level == 256)
+    {
+        poly_modulus_degree = 8192;
+        parms.set_poly_modulus_degree(poly_modulus_degree);
+        parms.set_coeff_modulus(CoeffModulus::BFVDefault(poly_modulus_degree, sec_level_type::tc256));
+    }    
+   
     parms.set_plain_modulus(PlainModulus::Batching(poly_modulus_degree, 20)); // seems like 16 also works
 
     cout << "\nTotal memory allocated by global memory pool: "
@@ -69,6 +89,13 @@ int main()
 
     string name;
     ofstream ofile;
+
+    // create directory to save keys
+    auto created_new_directory
+      = std::filesystem::create_directory("../data/keys/");
+    if (not created_new_directory) {
+        // Either creation failed or the directory was already present.
+    }
 
     // save the keys (public, secret, relin and galios)
     name = "../data/keys/public_key_bfv_1_to_1.bin";
@@ -132,6 +159,13 @@ int main()
             else{
                 pod_matrix.push_back((int64_t) 0);
             }
+        }
+
+        // create directory to save encrypted gallery
+        auto created_new_directory = std::filesystem::create_directory("../data/gallery/");
+        if (not created_new_directory)
+        {
+            // Either creation failed or the directory was already present.
         }
 
         // Encrypt entire vector of gallery

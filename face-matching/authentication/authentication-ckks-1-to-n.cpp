@@ -23,8 +23,6 @@
 #include <mutex>
 #include <random>
 #include <limits>
-
-#include <time.h>
 #include <cmath>
 
 #include "seal/seal.h"
@@ -38,6 +36,7 @@ int main(int argc, char **argv)
     float precision;
     vector<double> pod_result;
     int num_gallery = atoi(argv[1]);
+    int security_level = atoi(argv[2]);
 
     GaloisKeys gal_key;
     RelinKeys relin_key;
@@ -45,11 +44,29 @@ int main(int argc, char **argv)
     SecretKey secret_key;
 
     auto scale = pow(2.0, 32);
-    size_t poly_modulus_degree = 8192;
 
+    size_t poly_modulus_degree;
     EncryptionParameters parms(scheme_type::CKKS);
-    parms.set_poly_modulus_degree(poly_modulus_degree);
-    parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 40, 40, 60 }));
+
+    // these parameters have not been optimized for speed
+    if (security_level == 128)
+    {
+        poly_modulus_degree = 4096;
+        parms.set_poly_modulus_degree(poly_modulus_degree);
+        parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 40, 40, 60 }));
+    }
+    else if (security_level == 192)
+    {
+        poly_modulus_degree = 8192;
+        parms.set_poly_modulus_degree(poly_modulus_degree);
+        parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 40, 40, 60 }));
+    }
+    else if (security_level == 256)
+    {
+        poly_modulus_degree = 8192;
+        parms.set_poly_modulus_degree(poly_modulus_degree);
+        parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 40, 40, 60 }));
+    }
 
     cout << "\nTotal memory allocated by global memory pool: "
         << (MemoryPoolHandle::Global().alloc_byte_count() >> 20) << " MB" << endl;
@@ -169,16 +186,34 @@ int main(int argc, char **argv)
     evaluator.rescale_to_next_inplace(encrypted_zero);
     pod_vector.clear();
 
+    double time_total;
+    std::chrono::steady_clock::time_point time_start, time_end;
+
     for (int i=0; i < num_probe; i++)
     {
+        time_start = std::chrono::steady_clock::now();
+
         vector<double> pod_result;
         Ciphertext encrypted_result = Ciphertext(encrypted_zero);
+        
+        // we do not want to measure the time for printing
+        time_end = std::chrono::steady_clock::now();
+        time_total += std::chrono::duration_cast<std::chrono::milliseconds>(time_end - time_start).count();
         cout << "Encrypting Probe: " << i << endl;
+        time_start = std::chrono::steady_clock::now();
 
         for (int j=0; j < dim_probe; j++)
         {
+
+            // we do not want to measure the time for loading from disk
+            time_end = std::chrono::steady_clock::now();
+            time_total += std::chrono::duration_cast<std::chrono::milliseconds>(time_end - time_start).count();
+
             // Load vector of probe from file
             ifile.read((char *)&probe, sizeof(float));
+
+            // start the timer again
+            time_start = std::chrono::steady_clock::now();
 
             for (int k=0;k<slot_count;k++)
             {
@@ -201,6 +236,10 @@ int main(int argc, char **argv)
         decryptor.decrypt(encrypted_result, plain_result);
         ckks_encoder.decode(plain_result, pod_result);
 
+        // we are done now and don't want to measure time for printing
+        time_end = std::chrono::steady_clock::now();
+        time_total += std::chrono::duration_cast<std::chrono::milliseconds>(time_end - time_start).count();
+
         for (int k=0; k < num_gallery; k++)
         {
             score = float(pod_result[k]);
@@ -209,6 +248,7 @@ int main(int argc, char **argv)
         cout << " " << endl;
         pod_result.clear();
     }
+    cout << "Avg time:" <<  time_total / (num_gallery * num_probe) << endl;
     cout << "Matching Probes: Done" << endl;
     ifile.close();
     return 0;

@@ -25,14 +25,14 @@ If you think this library is useful to your research, please cite:
         author={Boddeti, Vishnu Naresh},
         booktitle={IEEE International Conference on Biometrics: Theory, Applications, and Systems (BTAS)},
         year={2018}
-	}
-	
+    }
+    
     @article{engelsma2020hers,
         title={HERS: Homomorphically Encrypted Representation Search},
         author={Joshua Engelsma, Anil Jain and Vishnu Boddeti},
         journal={arXiv:2003.12197},
         year={2020}
-	}
+    }
 
 # Installation
 
@@ -60,28 +60,32 @@ $ cd ../bin
 
 # Usage
 
-Authentication takes an additional parameter, the number of gallery samples to match with. This should match the number of gallery samples enrolled.
+Both enrollment and authentication take desired security level in bits as inputs. Options for security level supported are 128, 192 and 256 bits. Authentication takes an additional parameter, the number of gallery samples to match with. This should match the number of gallery samples enrolled.
 
 ## 1:1 Matching with BFV scheme
+
 ~~~~
-$ ./enrollment-bfv-1-to-1
-$ ./authentication-bfv-1-to-1 16
+$ ./enrollment-bfv-1-to-1 128
+$ ./authentication-bfv-1-to-1 16 128
 ~~~~
 
 ## 1:N Matching with BFV scheme
+
 ~~~~
-$ ./enrollment-bfv-1-to-n
-$ ./authentication-bfv-1-to-n 16
+$ ./enrollment-bfv-1-to-n 128
+$ ./authentication-bfv-1-to-n 16 128
 ~~~~
 
 ## 1:1 Matching with CKKS scheme
+
 ~~~~
-$ ./enrollment-ckks-1-to-1
-$ ./authentication-ckks-1-to-1 16
+$ ./enrollment-ckks-1-to-1 128
+$ ./authentication-ckks-1-to-1 16 128
 ~~~~
 
 ## 1:N Matching with CKKS scheme
+
 ~~~~
-$ ./enrollment-ckks-1-to-n
-$ ./authentication-ckks-1-to-n 16
+$ ./enrollment-ckks-1-to-n 128
+$ ./authentication-ckks-1-to-n 16 128
 ~~~~
