@@ -9,7 +9,7 @@
 //
 //   Created On: 05/01/2018
 //   Created By: Vishnu Boddeti <mailto:vishnu@msu.edu>
-//   Modified On: 07/06/2022
+//   Modified On: 06/01/2023
 ////////////////////////////////////////////////////////////////////////////
 
 #include <fstream>
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
     precision = 125; // precision of 1/125 = 0.004
 
     size_t poly_modulus_degree;
-    EncryptionParameters parms(scheme_type::BFV);
+    EncryptionParameters parms(scheme_type::bfv);
     
     if (security_level == 128)
     {
@@ -74,7 +74,7 @@ int main(int argc, char **argv)
     cout << "\nTotal memory allocated by global memory pool: "
         << (MemoryPoolHandle::Global().alloc_byte_count() >> 20) << " MB" << endl;
 
-    auto context = SEALContext::Create(parms);
+    SEALContext context(parms);
     print_line(__LINE__);
     cout << "Set encryption parameters and print" << endl;
     print_parameters(context);

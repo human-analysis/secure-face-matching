@@ -9,7 +9,7 @@
 //
 //   Created On: 05/01/2018
 //   Created By: Vishnu Boddeti <mailto:vishnu@msu.edu>
-//   Modified On: 07/06/2022
+//   Modified On: 06/01/2023
 ////////////////////////////////////////////////////////////////////////////
 
 #include <fstream>
@@ -48,32 +48,32 @@ int main(int argc, char **argv)
     auto scale = pow(2.0, 20);
     
     size_t poly_modulus_degree;
-    EncryptionParameters parms(scheme_type::CKKS);
+    EncryptionParameters parms(scheme_type::ckks);
 
     // these parameters have not been optimized for speed
     if (security_level == 128)
     {
         poly_modulus_degree = 4096;
         parms.set_poly_modulus_degree(poly_modulus_degree);
-        parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 40, 40, 60 }));
+        parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 30, 20, 20, 30 }));
     }
     else if (security_level == 192)
     {
         poly_modulus_degree = 8192;
         parms.set_poly_modulus_degree(poly_modulus_degree);
-        parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 40, 40, 60 }));
+        parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 30, 20, 20, 30 }));
     }
     else if (security_level == 256)
     {
         poly_modulus_degree = 8192;
         parms.set_poly_modulus_degree(poly_modulus_degree);
-        parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 40, 40, 60 }));
+        parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 30, 20, 20, 30 }));
     }
 
     cout << "\nTotal memory allocated by global memory pool: "
         << (MemoryPoolHandle::Global().alloc_byte_count() >> 20) << " MB" << endl;
 
-    auto context = SEALContext::Create(parms);
+    SEALContext context(parms);
     print_line(__LINE__);
     cout << "Set encryption parameters and print" << endl;
     print_parameters(context);

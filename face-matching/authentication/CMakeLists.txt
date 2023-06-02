@@ -14,7 +14,7 @@ add_executable(authentication-ckks-1-to-1 authentication-ckks-1-to-1.cpp)
 add_executable(authentication-ckks-1-to-n authentication-ckks-1-to-n.cpp)
 
 # Import Microsoft SEAL
-find_package(SEAL 3.4.5 EXACT REQUIRED)
+find_package(SEAL 4.1.1 EXACT REQUIRED)
 
 if(SEAL_FOUND)
     message("SEAL Found")

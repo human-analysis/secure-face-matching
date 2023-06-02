@@ -3,33 +3,29 @@
 
 #pragma once
 
+#include "seal/seal.h"
+#include <algorithm>
+#include <chrono>
 #include <cstddef>
-#include <iostream>
 #include <fstream>
 #include <iomanip>
-#include <vector>
-#include <string>
-#include <chrono>
-#include <random>
-#include <thread>
-#include <mutex>
-#include <memory>
+#include <iostream>
 #include <limits>
-#include <algorithm>
+#include <memory>
+#include <mutex>
 #include <numeric>
-#include "seal/seal.h"
+#include <random>
+#include <sstream>
+#include <string>
+#include <thread>
+#include <vector>
 
 /*
 Helper function: Prints the parameters in a SEALContext.
 */
-inline void print_parameters(std::shared_ptr<seal::SEALContext> context)
+inline void print_parameters(const seal::SEALContext &context)
 {
-    // Verify parameters
-    if (!context)
-    {
-        throw std::invalid_argument("context is not set");
-    }
-    auto &context_data = *context->key_context_data();
+    auto &context_data = *context.key_context_data();
 
     /*
     Which scheme are we using?
@@ -37,11 +33,14 @@ inline void print_parameters(std::shared_ptr<seal::SEALContext> context)
     std::string scheme_name;
     switch (context_data.parms().scheme())
     {
-    case seal::scheme_type::BFV:
+    case seal::scheme_type::bfv:
         scheme_name = "BFV";
         break;
-    case seal::scheme_type::CKKS:
+    case seal::scheme_type::ckks:
         scheme_name = "CKKS";
+        break;
+    case seal::scheme_type::bgv:
+        scheme_name = "BGV";
         break;
     default:
         throw std::invalid_argument("unsupported scheme");
@@ -49,8 +48,7 @@ inline void print_parameters(std::shared_ptr<seal::SEALContext> context)
     std::cout << "/" << std::endl;
     std::cout << "| Encryption parameters :" << std::endl;
     std::cout << "|   scheme: " << scheme_name << std::endl;
-    std::cout << "|   poly_modulus_degree: " <<
-        context_data.parms().poly_modulus_degree() << std::endl;
+    std::cout << "|   poly_modulus_degree: " << context_data.parms().poly_modulus_degree() << std::endl;
 
     /*
     Print the size of the true (product) coefficient modulus.
@@ -58,8 +56,8 @@ inline void print_parameters(std::shared_ptr<seal::SEALContext> context)
     std::cout << "|   coeff_modulus size: ";
     std::cout << context_data.total_coeff_modulus_bit_count() << " (";
     auto coeff_modulus = context_data.parms().coeff_modulus();
-    std::size_t coeff_mod_count = coeff_modulus.size();
-    for (std::size_t i = 0; i < coeff_mod_count - 1; i++)
+    std::size_t coeff_modulus_size = coeff_modulus.size();
+    for (std::size_t i = 0; i < coeff_modulus_size - 1; i++)
     {
         std::cout << coeff_modulus[i].bit_count() << " + ";
     }
@@ -69,10 +67,9 @@ inline void print_parameters(std::shared_ptr<seal::SEALContext> context)
     /*
     For the BFV scheme print the plain_modulus parameter.
     */
-    if (context_data.parms().scheme() == seal::scheme_type::BFV)
+    if (context_data.parms().scheme() == seal::scheme_type::bfv)
     {
-        std::cout << "|   plain_modulus: " << context_data.
-            parms().plain_modulus().value() << std::endl;
+        std::cout << "|   plain_modulus: " << context_data.parms().plain_modulus().value() << std::endl;
     }
 
     std::cout << "\\" << std::endl;
@@ -81,7 +78,7 @@ inline void print_parameters(std::shared_ptr<seal::SEALContext> context)
 /*
 Helper function: Prints the `parms_id' to std::ostream.
 */
-inline std::ostream &operator <<(std::ostream &stream, seal::parms_id_type parms_id)
+inline std::ostream &operator<<(std::ostream &stream, seal::parms_id_type parms_id)
 {
     /*
     Save the formatting information for std::cout.
@@ -89,11 +86,8 @@ inline std::ostream &operator <<(std::ostream &stream, seal::parms_id_type parms
     std::ios old_fmt(nullptr);
     old_fmt.copyfmt(std::cout);
 
-    stream << std::hex << std::setfill('0')
-        << std::setw(16) << parms_id[0] << " "
-        << std::setw(16) << parms_id[1] << " "
-        << std::setw(16) << parms_id[2] << " "
-        << std::setw(16) << parms_id[3] << " ";
+    stream << std::hex << std::setfill('0') << std::setw(16) << parms_id[0] << " " << std::setw(16) << parms_id[1]
+           << " " << std::setw(16) << parms_id[2] << " " << std::setw(16) << parms_id[3] << " ";
 
     /*
     Restore the old std::cout formatting.
@@ -106,7 +100,7 @@ inline std::ostream &operator <<(std::ostream &stream, seal::parms_id_type parms
 /*
 Helper function: Prints a vector of floating-point values.
 */
-template<typename T>
+template <typename T>
 inline void print_vector(std::vector<T> vec, std::size_t print_size = 4, int prec = 3)
 {
     /*
@@ -119,7 +113,7 @@ inline void print_vector(std::vector<T> vec, std::size_t print_size = 4, int pre
 
     std::cout << std::fixed << std::setprecision(prec);
     std::cout << std::endl;
-    if(slot_count <= 2 * print_size)
+    if (slot_count <= 2 * print_size)
     {
         std::cout << "    [";
         for (std::size_t i = 0; i < slot_count; i++)
@@ -135,7 +129,7 @@ inline void print_vector(std::vector<T> vec, std::size_t print_size = 4, int pre
         {
             std::cout << " " << vec[i] << ",";
         }
-        if(vec.size() > 2 * print_size)
+        if (vec.size() > 2 * print_size)
         {
             std::cout << " ...,";
         }
@@ -152,11 +146,10 @@ inline void print_vector(std::vector<T> vec, std::size_t print_size = 4, int pre
     std::cout.copyfmt(old_fmt);
 }
 
-
 /*
 Helper function: Prints a matrix of values.
 */
-template<typename T>
+template <typename T>
 inline void print_matrix(std::vector<T> matrix, std::size_t row_size)
 {
     /*
@@ -174,8 +167,7 @@ inline void print_matrix(std::vector<T> matrix, std::size_t row_size)
     std::cout << std::setw(3) << " ...,";
     for (std::size_t i = row_size - print_size; i < row_size; i++)
     {
-        std::cout << std::setw(3) << matrix[i]
-            << ((i != row_size - 1) ? "," : " ]\n");
+        std::cout << std::setw(3) << matrix[i] << ((i != row_size - 1) ? "," : " ]\n");
     }
     std::cout << "    [";
     for (std::size_t i = row_size; i < row_size + print_size; i++)
@@ -185,11 +177,10 @@ inline void print_matrix(std::vector<T> matrix, std::size_t row_size)
     std::cout << std::setw(3) << " ...,";
     for (std::size_t i = 2 * row_size - print_size; i < 2 * row_size; i++)
     {
-        std::cout << std::setw(3) << matrix[i]
-            << ((i != 2 * row_size - 1) ? "," : " ]\n");
+        std::cout << std::setw(3) << matrix[i] << ((i != 2 * row_size - 1) ? "," : " ]\n");
     }
     std::cout << std::endl;
-};
+}
 
 /*
 Helper function: Print line number.
@@ -197,4 +188,12 @@ Helper function: Print line number.
 inline void print_line(int line_number)
 {
     std::cout << "Line " << std::setw(3) << line_number << " --> ";
+}
+
+/*
+Helper function: Convert a value into a hexadecimal string, e.g., uint64_t(17) --> "11".
+*/
+inline std::string uint64_to_hex_string(std::uint64_t value)
+{
+    return seal::util::uint_to_hex_string(&value, std::size_t(1));
 }

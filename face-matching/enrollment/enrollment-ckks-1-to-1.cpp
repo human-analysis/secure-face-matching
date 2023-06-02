@@ -8,7 +8,7 @@
 //
 //   Created On: 05/01/2018
 //   Created By: Vishnu Boddeti <mailto:vishnu@msu.edu>
-//   Modified On: 07/06/2022
+//   Modified On: 06/01/2023
 ////////////////////////////////////////////////////////////////////////////
 
 #include <fstream>
@@ -44,7 +44,7 @@ int main(int argc, char **argv)
     auto scale = pow(2.0, 32);
     
     size_t poly_modulus_degree;
-    EncryptionParameters parms(scheme_type::CKKS);
+    EncryptionParameters parms(scheme_type::ckks);
 
     if (security_level == 128)
     {
@@ -68,16 +68,20 @@ int main(int argc, char **argv)
     cout << "\nTotal memory allocated by global memory pool: "
         << (MemoryPoolHandle::Global().alloc_byte_count() >> 20) << " MB" << endl;
 
-    auto context = SEALContext::Create(parms);
+    SEALContext context(parms);
     print_line(__LINE__);
     cout << "Set encryption parameters and print" << endl;
     print_parameters(context);
 
+    PublicKey public_key;
+    RelinKeys relin_key;
+    GaloisKeys gal_key;
+
     KeyGenerator keygen(context);
-    GaloisKeys gal_key = keygen.galois_keys();
-    RelinKeys relin_key = keygen.relin_keys();
-    PublicKey public_key = keygen.public_key();
     SecretKey secret_key = keygen.secret_key();
+    keygen.create_public_key(public_key);
+    keygen.create_relin_keys(relin_key);
+    keygen.create_galois_keys(gal_key);
 
     Evaluator evaluator(context);
     CKKSEncoder ckks_encoder(context);
